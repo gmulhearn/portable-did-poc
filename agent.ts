@@ -15,6 +15,7 @@ import { AskarModule } from "@credo-ts/askar";
 import { ariesAskar } from "@hyperledger/aries-askar-nodejs";
 import { AGENT_WALLET_KEY } from "./constants";
 import { BbsModule } from "@credo-ts/bbs-signatures";
+import { DidRoutingResolver } from "./DidRoutingResolver";
 
 export const agent = new Agent({
   dependencies: agentDependencies,
@@ -29,10 +30,12 @@ export const agent = new Agent({
   modules: {
     dids: new DidsModule({
       resolvers: [
-        new KeyDidResolver(),
-        new JwkDidResolver(),
-        new WebDidResolver(),
-        new CheqdDidResolver(),
+        new DidRoutingResolver([ // wrap resolvers we want to support in a re-router
+          new KeyDidResolver(),
+          new JwkDidResolver(),
+          new WebDidResolver(),
+          new CheqdDidResolver(),
+        ]),
       ],
       registrars: [new KeyDidRegistrar(), new JwkDidRegistrar()],
     }),

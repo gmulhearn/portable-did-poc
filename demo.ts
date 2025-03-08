@@ -13,11 +13,19 @@ import {
 import { AGENT_HOST } from "./constants";
 import { agent } from "./agent";
 
+/// 1. AGENT INITIALIZATION
+console.log("### AGENT INITIALIZATION");
 const server = express();
-
 await agent.initialize();
-console.log("agent initialized");
+server.listen(3000, (err?: any) => {
+  if (err) throw err;
+  console.log(
+    "Server running on http://localhost:3000 (for did:web resolution)"
+  );
+});
 
+/// 2. SETUP ISSUER'S FIRST (OLD) DID
+console.log("### SETUP ISSUER DID #1");
 const issuerAssertionKey = await setupAssertionKey();
 const firstIssuerDid = await setupFirstIssuerDid(server, issuerAssertionKey);
 {
@@ -25,15 +33,8 @@ const firstIssuerDid = await setupFirstIssuerDid(server, issuerAssertionKey);
   console.log("initialized issuer's first DID", firstIssuerDid, didDoc);
 }
 
-server.listen(3000, (err?: any) => {
-  if (err) throw err;
-  console.log("Server running on http://localhost:3000");
-});
-
-console.log(
-  JSON.stringify(await agent.dids.resolve(`${firstIssuerDid}#key-1`))
-);
-
+/// 3. ISSUE CREDENTIAL FROM ISSUER'S FIRST DID
+console.log("### ISSUE CRED FROM ISSUER DID #1");
 let issuedCredential = (await agent.w3cCredentials.signCredential({
   verificationMethod: `${firstIssuerDid}#key-1`, // TODO - dynamic
   format: ClaimFormat.LdpVc,
@@ -49,14 +50,17 @@ let issuedCredential = (await agent.w3cCredentials.signCredential({
     },
   }),
 })) as W3cJsonLdVerifiableCredential;
-
 console.log("issued credential", issuedCredential.toJson());
 
+/// 4. VERIFY CREDENTIAL FROM ISSUER'S FIRST DID
+console.log("### VERIFY CRED FROM ISSUER DID #1");
 let verificationResult = await agent.w3cCredentials.verifyCredential({
   credential: issuedCredential,
 });
 console.log("cred verification result", verificationResult.isValid);
 
+/// 5. SETUP ISSUER'S SECOND (NEW) DID
+console.log("### SETUP ISSUER DID #2");
 const secondIssuerDid = await setupSecondIssuerDid(
   server,
   issuerAssertionKey,
@@ -67,11 +71,23 @@ const secondIssuerDid = await setupSecondIssuerDid(
   console.log("initialized issuer's second DID", secondIssuerDid, didDoc);
 }
 
+/// 6. DEACTIVATE ISSUER'S OLD DID AND POINT TO NEW DID (alsoKnownAs)
+console.log("### DEACTIVATE ISSUER DID #1");
 await updateDidDocumentWithAlsoKnownAs(firstIssuerDid, secondIssuerDid);
 {
   let didDoc = await agent.dids.resolveDidDocument(firstIssuerDid);
   console.log("updated issuer's first DID with AKA field", didDoc);
 }
+// TODO - deactive old DID
+
+/// 7. RE-VERIFY CREDENTIAL FROM ISSUER'S FIRST DID (SHOULD RE-ROUTE TO NEW DID DOC)
+console.log("### RE-VERIFY CRED FROM ISSUER DID #1");
+let verificationResult2 = await agent.w3cCredentials.verifyCredential({
+  credential: issuedCredential,
+});
+console.log("cred verification result", verificationResult2.isValid, JSON.stringify(verificationResult2));
+
+// TODO - some more fail cases
 
 async function setupAssertionKey(): Promise<Key> {
   return await agent.wallet.createKey({
@@ -107,7 +123,7 @@ async function setupFirstIssuerDid(
     overwrite: true,
   });
 
-  server.use("/first/.well-known/did.json", async (_, response: Response) => {
+  server.use("/first/did.json", async (_, response: Response) => {
     const [createdDid] = await agent.dids.getCreatedDids({ did: issuerDid });
 
     if (!createdDid || !createdDid.didDocument) {
@@ -146,9 +162,10 @@ async function setupSecondIssuerDid(
   const issuerDid = `did:web:${cleanHost}:second`;
 
   const assertionMethod = new VerificationMethod({
-    id: `${issuerDid}#key-1`,
+    id: `${oldDid}#key-1`, // must retain the old VM
     type: "Ed25519VerificationKey2018",
     controller: issuerDid,
+    // controller: oldDid, // must retain the old controller?
     publicKeyBase58: assertionKey.publicKeyBase58,
   });
 
@@ -167,7 +184,7 @@ async function setupSecondIssuerDid(
     overwrite: true,
   });
 
-  server.use("/second/.well-known/did.json", async (_, response: Response) => {
+  server.use("/second/did.json", async (_, response: Response) => {
     const [createdDid] = await agent.dids.getCreatedDids({ did: issuerDid });
 
     if (!createdDid || !createdDid.didDocument) {
