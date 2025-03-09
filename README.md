@@ -1,4 +1,19 @@
 # Portable DIDs Proof of Concept
+## Description
+### VC Issuer DID rotation demo
+Proof of concept demo which shows the following issuer flow:
+1. initialize issuer agent
+2. issuer creates DID 1
+3. issuer issues VC with DID 1
+4. verifier verifies VC
+5. issuer creates DID 2 with the same assertionKey as DID 1
+6. issuer deactivates DID 1 and redirects it to DID 2
+7. verifier re-verifies VC (works due to re-direct)
+8. issuer rotates the assertionKey on DID 2
+9. verifier re-verifies VC (fails, as the VC was signed by pre-rotation key)
+
+please see [demo.ts](./demo.ts) for a code walkthrough of these steps
+
 ## Setup
 Base setup:
 1. `cp .env.template .env`
