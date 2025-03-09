@@ -54,14 +54,14 @@ export async function setupSecondIssuerDidCheqd(
       verificationMethod: [
         {
           // TODO - cheqd DID is unhappy with VM ID's that aren't the DID..
-          id: `${oldDid}#key-1`, // must retain the old VM
+          id: `${issuerDid}#key-1`, // must retain the old VM
           type: "Ed25519VerificationKey2018",
           controller: issuerDid, // but controlled by the new DID
           publicKeyBase58: assertionKey.publicKeyBase58,
         },
       ],
-      authentication: [`${oldDid}#key-1`],
-      assertionMethod: [`${oldDid}#key-1`],
+      authentication: [`${issuerDid}#key-1`],
+      assertionMethod: [`${issuerDid}#key-1`],
     }),
   });
 

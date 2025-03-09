@@ -61,9 +61,10 @@ export async function setupSecondIssuerDidWeb(
   const issuerDid = `did:web:${cleanHost}:second`;
 
   const assertionMethod = new VerificationMethod({
-    id: `${oldDid}#key-1`, // must retain the old VM
+    id: `${issuerDid}#key-1`, // VM with new issuer, but same fragment
+    // id: `${oldDid}#key-1`, // must retain the old VM?
     type: "Ed25519VerificationKey2018",
-    controller: issuerDid, // but controlled by the new DID
+    controller: issuerDid, // controlled by the new DID
     publicKeyBase58: assertionKey.publicKeyBase58,
   });
 

@@ -1,0 +1,44 @@
+diff --git a/node_modules/@credo-ts/core/build/modules/dids/domain/verificationMethod/Ed25519VerificationKey2018.js b/node_modules/@credo-ts/core/build/modules/dids/domain/verificationMethod/Ed25519VerificationKey2018.js
+index 5d3ec0d..74c9f00 100644
+--- a/node_modules/@credo-ts/core/build/modules/dids/domain/verificationMethod/Ed25519VerificationKey2018.js
++++ b/node_modules/@credo-ts/core/build/modules/dids/domain/verificationMethod/Ed25519VerificationKey2018.js
+@@ -30,6 +30,7 @@ function isEd25519VerificationKey2018(verificationMethod) {
+  * Get a key from a Ed25519VerificationKey2018 verification method.
+  */
+ function getKeyFromEd25519VerificationKey2018(verificationMethod) {
++    console.log(verificationMethod)
+     if (!verificationMethod.publicKeyBase58) {
+         throw new error_1.CredoError('verification method is missing publicKeyBase58');
+     }
+diff --git a/node_modules/@credo-ts/core/build/modules/vc/data-integrity/libraries/documentLoader.js b/node_modules/@credo-ts/core/build/modules/vc/data-integrity/libraries/documentLoader.js
+index c9cc588..daf2263 100644
+--- a/node_modules/@credo-ts/core/build/modules/vc/data-integrity/libraries/documentLoader.js
++++ b/node_modules/@credo-ts/core/build/modules/vc/data-integrity/libraries/documentLoader.js
+@@ -13,6 +13,7 @@ const nativeDocumentLoader_1 = require("./nativeDocumentLoader");
+ function defaultDocumentLoader(agentContext) {
+     const didResolver = agentContext.dependencyManager.resolve(dids_1.DidResolverService);
+     async function loader(url) {
++        console.log("DOC LOADER CALLED", url)
+         // Check if in the default contexts shipped with Credo
+         if (url in contexts_1.DEFAULT_CONTEXTS) {
+             return {
+@@ -34,14 +35,18 @@ function defaultDocumentLoader(agentContext) {
+             if (result.didResolutionMetadata.error || !result.didDocument) {
+                 throw new CredoError_1.CredoError(`Unable to resolve DID: ${url}`);
+             }
++            console.log("DOC LOADER RESOLVED DID", (result.didDocument.toJSON()))
+             const framed = await jsonld_1.default.frame(result.didDocument.toJSON(), {
+                 '@context': result.didDocument.context,
+                 '@embed': '@never',
+-                id: url,
++                // id: url
++                // id: url.includes("#") ? url : result.didDocument.id,
++                id: url.replace(url.split("#")[0], result.didDocument.id)
+             }, 
+             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+             // @ts-ignore
+             { documentLoader: this });
++            console.log("DOC LOADER FRAMED DID", framed)
+             return {
+                 contextUrl: null,
+                 documentUrl: url,

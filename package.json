@@ -11,7 +11,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "patch-package --patch-dir ./patches/case-1-fix-2-1"
+    "postinstall": "patch-package --patch-dir ./patches/case-3-fix-1"
   },
   "dependencies": {
     "@chakra-ui/icons": "^2.2.4",

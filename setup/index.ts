@@ -89,38 +89,63 @@ export async function setupAssertionKey(): Promise<Key> {
   });
 }
 
+const DEMO_METHOD: "cheqd" | "web" = "web";
+
 export async function setupFirstIssuerDid(assertionKey: Key): Promise<string> {
-  return await setupFirstIssuerDidWeb(assertionKey);
-  // return await setupFirstIssuerDidCheqd(assertionKey);
+  if (DEMO_METHOD === "cheqd") {
+    return await setupFirstIssuerDidCheqd(assertionKey);
+  } else if (DEMO_METHOD === "web") {
+    return await setupFirstIssuerDidWeb(assertionKey);
+  } else {
+    throw new Error("bad method");
+  }
 }
 
 export async function setupSecondIssuerDid(
   assertionKey: Key,
   oldDid: string
 ): Promise<string> {
-  return await setupSecondIssuerDidWeb(assertionKey, oldDid);
-  // return await setupSecondIssuerDidCheqd(assertionKey, oldDid);
+  if (DEMO_METHOD === "cheqd") {
+    return await setupSecondIssuerDidCheqd(assertionKey, oldDid);
+  } else if (DEMO_METHOD === "web") {
+    return await setupSecondIssuerDidWeb(assertionKey, oldDid);
+  } else {
+    throw new Error("bad method");
+  }
 }
 
 export async function updateDidDocumentWithAlsoKnownAs(
   didToUpdate: string,
   newDid: string
 ) {
-  await updateDidWebDocumentWithAlsoKnownAs(didToUpdate, newDid);
-  // await updateDidCheqdDocumentWithAlsoKnownAs(didToUpdate, newDid);
+  if (DEMO_METHOD === "cheqd") {
+    await updateDidCheqdDocumentWithAlsoKnownAs(didToUpdate, newDid);
+  } else if (DEMO_METHOD === "web") {
+    await updateDidWebDocumentWithAlsoKnownAs(didToUpdate, newDid);
+  } else {
+    throw new Error("bad method");
+  }
 }
 
-export async function deactivateDid(
-  did: string
-) {
-  await deactivateDidWeb(did)
-  // await deactivateDidCheqd(did)
+export async function deactivateDid(did: string) {
+  if (DEMO_METHOD === "cheqd") {
+    await deactivateDidCheqd(did);
+  } else if (DEMO_METHOD === "web") {
+    await deactivateDidWeb(did);
+  } else {
+    throw new Error("bad method");
+  }
 }
 
 export async function rotateIssuerDidKey(
   didToUpdate: string,
   newAssertionKey: Key
 ) {
-  await rotateIssuerDidWebKey(didToUpdate, newAssertionKey);
-  // await rotateIssuerDidCheqdKey(didToUpdate, newAssertionKey);
+  if (DEMO_METHOD === "cheqd") {
+    await rotateIssuerDidCheqdKey(didToUpdate, newAssertionKey);
+  } else if (DEMO_METHOD === "web") {
+    await rotateIssuerDidWebKey(didToUpdate, newAssertionKey);
+  } else {
+    throw new Error("bad method");
+  }
 }
