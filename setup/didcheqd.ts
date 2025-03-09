@@ -1,6 +1,5 @@
 import {
   CheqdDidCreateOptions,
-  CheqdDidDeactivateOptions,
 } from "@credo-ts/cheqd";
 import { randomUUID } from "crypto";
 import { agent } from ".";

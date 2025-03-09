@@ -25,6 +25,7 @@
     "@credo-ts/openid4vc": "^0.5.13",
     "@emotion/react": "^11.13.3",
     "@hyperledger/aries-askar-nodejs": "^0.2.3",
+    "@hyperledger/indy-vdr-nodejs": "^0.2.2",
     "cookie": "^1.0.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
