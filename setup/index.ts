@@ -23,6 +23,7 @@ import { ariesAskar } from "@hyperledger/aries-askar-nodejs";
 import {
   AGENT_WALLET_KEY,
   CHEQD_TESTNET_COSMOS_PAYER_SEED,
+  DEMO_DID_METHOD,
 } from "../constants";
 import { DidRoutingResolver } from "../DidRoutingResolver";
 import {
@@ -89,12 +90,10 @@ export async function setupAssertionKey(): Promise<Key> {
   });
 }
 
-const DEMO_METHOD: "cheqd" | "web" = "web";
-
 export async function setupFirstIssuerDid(assertionKey: Key): Promise<string> {
-  if (DEMO_METHOD === "cheqd") {
+  if (DEMO_DID_METHOD === "cheqd") {
     return await setupFirstIssuerDidCheqd(assertionKey);
-  } else if (DEMO_METHOD === "web") {
+  } else if (DEMO_DID_METHOD === "web") {
     return await setupFirstIssuerDidWeb(assertionKey);
   } else {
     throw new Error("bad method");
@@ -105,9 +104,9 @@ export async function setupSecondIssuerDid(
   assertionKey: Key,
   oldDid: string
 ): Promise<string> {
-  if (DEMO_METHOD === "cheqd") {
+  if (DEMO_DID_METHOD === "cheqd") {
     return await setupSecondIssuerDidCheqd(assertionKey, oldDid);
-  } else if (DEMO_METHOD === "web") {
+  } else if (DEMO_DID_METHOD === "web") {
     return await setupSecondIssuerDidWeb(assertionKey, oldDid);
   } else {
     throw new Error("bad method");
@@ -118,9 +117,9 @@ export async function updateDidDocumentWithAlsoKnownAs(
   didToUpdate: string,
   newDid: string
 ) {
-  if (DEMO_METHOD === "cheqd") {
+  if (DEMO_DID_METHOD === "cheqd") {
     await updateDidCheqdDocumentWithAlsoKnownAs(didToUpdate, newDid);
-  } else if (DEMO_METHOD === "web") {
+  } else if (DEMO_DID_METHOD === "web") {
     await updateDidWebDocumentWithAlsoKnownAs(didToUpdate, newDid);
   } else {
     throw new Error("bad method");
@@ -128,9 +127,9 @@ export async function updateDidDocumentWithAlsoKnownAs(
 }
 
 export async function deactivateDid(did: string) {
-  if (DEMO_METHOD === "cheqd") {
+  if (DEMO_DID_METHOD === "cheqd") {
     await deactivateDidCheqd(did);
-  } else if (DEMO_METHOD === "web") {
+  } else if (DEMO_DID_METHOD === "web") {
     await deactivateDidWeb(did);
   } else {
     throw new Error("bad method");
@@ -141,9 +140,9 @@ export async function rotateIssuerDidKey(
   didToUpdate: string,
   newAssertionKey: Key
 ) {
-  if (DEMO_METHOD === "cheqd") {
+  if (DEMO_DID_METHOD === "cheqd") {
     await rotateIssuerDidCheqdKey(didToUpdate, newAssertionKey);
-  } else if (DEMO_METHOD === "web") {
+  } else if (DEMO_DID_METHOD === "web") {
     await rotateIssuerDidWebKey(didToUpdate, newAssertionKey);
   } else {
     throw new Error("bad method");

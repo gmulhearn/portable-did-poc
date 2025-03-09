@@ -8,13 +8,29 @@ import {
   DidDocument,
   JsonTransformer,
   Key,
+  KeyType,
   VerificationMethod,
 } from "@credo-ts/core";
+
+async function setupAuthencationVM(did: string): Promise<VerificationMethod> {
+  let authKey = await agent.wallet.createKey({
+    keyType: KeyType.Ed25519,
+  });
+  return {
+    id: `${did}#auth`,
+    type: "Ed25519VerificationKey2018",
+    controller: did,
+    publicKeyBase58: authKey.publicKeyBase58,
+  };
+}
 
 export async function setupFirstIssuerDidCheqd(
   assertionKey: Key
 ): Promise<string> {
   let issuerDid = `did:cheqd:testnet:${randomUUID()}`;
+
+  let authVM = await setupAuthencationVM(issuerDid);
+
   await agent.dids.create<CheqdDidCreateOptions>({
     method: "cheqd",
     secret: {},
@@ -29,9 +45,10 @@ export async function setupFirstIssuerDidCheqd(
           controller: issuerDid,
           publicKeyBase58: assertionKey.publicKeyBase58,
         },
+        authVM,
       ],
-      authentication: [`${issuerDid}#key-1`],
       assertionMethod: [`${issuerDid}#key-1`],
+      authentication: [authVM.id],
     }),
   });
 
@@ -43,6 +60,8 @@ export async function setupSecondIssuerDidCheqd(
   oldDid: string
 ): Promise<string> {
   let issuerDid = `did:cheqd:testnet:${randomUUID()}`;
+
+  let authVM = await setupAuthencationVM(issuerDid);
   await agent.dids.create<CheqdDidCreateOptions>({
     method: "cheqd",
     secret: {},
@@ -59,9 +78,10 @@ export async function setupSecondIssuerDidCheqd(
           controller: issuerDid, // but controlled by the new DID
           publicKeyBase58: assertionKey.publicKeyBase58,
         },
+        authVM,
       ],
-      authentication: [`${issuerDid}#key-1`],
       assertionMethod: [`${issuerDid}#key-1`],
+      authentication: [authVM.id],
     }),
   });
 
@@ -93,20 +113,18 @@ export async function rotateIssuerDidCheqdKey(
   newAssertionKey: Key
 ) {
   const [didRecord] = await agent.dids.getCreatedDids({ did: didToUpdate });
-  const didDoc = didRecord.didDocument!.toJSON();
+  const didDoc = didRecord.didDocument!;
 
-  // replace VM
-  didDoc!.verificationMethod = [
-    new VerificationMethod({
-      id: `${didToUpdate}#key-1`,
-      type: "Ed25519VerificationKey2018",
-      controller: didToUpdate,
-      publicKeyBase58: newAssertionKey.publicKeyBase58,
-    }),
-  ];
+  let newVMs = didDoc!.verificationMethod!.map((vm) => {
+    if (vm.id.endsWith("#key-1")) {
+      vm.publicKeyBase58 = newAssertionKey.publicKeyBase58;
+    }
+    return vm;
+  });
+  didDoc.verificationMethod = newVMs;
 
   await agent.dids.update({
     did: didToUpdate,
-    didDocument: JsonTransformer.fromJSON(didDoc, DidDocument),
+    didDocument: didDoc,
   });
 }

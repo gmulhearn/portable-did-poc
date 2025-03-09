@@ -14,6 +14,7 @@ import {
   updateDidDocumentWithAlsoKnownAs,
 } from "./setup";
 import { assert } from "console";
+import { server, serverListener } from "./setup/server";
 
 /// 1. AGENT INITIALIZATION
 console.log("### AGENT INITIALIZATION");
@@ -99,25 +100,12 @@ assert(
 
 /// OTHER FLOWS
 
-/// 8. ROTATE KEY IN ISSUER'S FIRST DID DOC (SHOULD NOT AFFECT)
+/// 8. ROTATE KEY IN ISSUER'S SECOND DID DOC (SHOULD AFFECT)
+console.log("### ROTATING SECOND ISSUERS KEY, BREAKING OLD VCS");
 let newAssertionKey = await setupAssertionKey();
-await rotateIssuerDidKey(firstIssuerDid, newAssertionKey);
-
-/// 9. RE-VERIFY CREDENTIAL FROM ISSUER'S FIRST DID (SHOULD RE-ROUTE TO NEW DID DOC AND NOT BE AFFECTED)
-console.log("### RE-VERIFY CRED FROM ISSUER DID #1");
-let verificationResult3 = await agent.w3cCredentials.verifyCredential({
-  credential: issuedCredential,
-});
-console.log(
-  "cred verification result",
-  verificationResult3.isValid,
-  JSON.stringify(verificationResult3)
-);
-
-/// 10. ROTATE KEY IN ISSUER'S SECOND DID DOC (SHOULD AFFECT)
 await rotateIssuerDidKey(secondIssuerDid, newAssertionKey);
 
-/// 11. RE-VERIFY CREDENTIAL FROM ISSUER'S FIRST DID (SHOULD RE-ROUTE TO NEW DID DOC AND BE AFFECTED)
+/// 9. RE-VERIFY CREDENTIAL FROM ISSUER'S FIRST DID (SHOULD RE-ROUTE TO NEW DID DOC AND BE AFFECTED)
 console.log("### RE-VERIFY CRED FROM ISSUER DID #1");
 let verificationResult4 = await agent.w3cCredentials.verifyCredential({
   credential: issuedCredential,
@@ -130,3 +118,4 @@ console.log(
 assert(!verificationResult4.isValid);
 
 console.log("SUCCESSFULLY COMPLETED DEMO FLOW");
+serverListener.close();
