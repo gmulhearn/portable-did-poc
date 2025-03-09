@@ -1,67 +1,17 @@
 import {
-  Agent,
-  ConsoleLogger,
   DidDocument,
   DidDocumentBuilder,
-  DidsModule,
   JsonTransformer,
-  JwkDidRegistrar,
-  JwkDidResolver,
   Key,
-  KeyDidRegistrar,
-  KeyDidResolver,
-  KeyType,
-  LogLevel,
   VerificationMethod,
-  WebDidResolver,
 } from "@credo-ts/core";
-import { CheqdDidResolver } from "@credo-ts/cheqd";
-import { agentDependencies } from "@credo-ts/node";
-import { AskarModule } from "@credo-ts/askar";
-import { ariesAskar } from "@hyperledger/aries-askar-nodejs";
-import { AGENT_HOST, AGENT_WALLET_KEY } from "./constants";
-import { BbsModule } from "@credo-ts/bbs-signatures";
-import { DidRoutingResolver } from "./DidRoutingResolver";
+
+import { AGENT_HOST } from "../constants";
 import { Express, Response } from "express";
+import { agent } from ".";
+import { server } from "./server";
 
-export const agent = new Agent({
-  dependencies: agentDependencies,
-  config: {
-    label: "Portable DIDS",
-    logger: new ConsoleLogger(LogLevel.trace),
-    walletConfig: {
-      id: "portable-dids",
-      key: AGENT_WALLET_KEY,
-    },
-  },
-  modules: {
-    dids: new DidsModule({
-      resolvers: [
-        new DidRoutingResolver([
-          // wrap resolvers we want to support in a re-router
-          new KeyDidResolver(),
-          new JwkDidResolver(),
-          new WebDidResolver(),
-          new CheqdDidResolver(),
-        ]),
-      ],
-      registrars: [new KeyDidRegistrar(), new JwkDidRegistrar()],
-    }),
-    askar: new AskarModule({
-      ariesAskar,
-    }),
-    bbs: new BbsModule(),
-  },
-});
-
-export async function setupAssertionKey(): Promise<Key> {
-  return await agent.wallet.createKey({
-    keyType: KeyType.Ed25519,
-  });
-}
-
-export async function setupFirstIssuerDid(
-  server: Express,
+export async function setupFirstIssuerDidWeb(
   assertionKey: Key
 ): Promise<string> {
   const cleanHost = encodeURIComponent(
@@ -101,8 +51,7 @@ export async function setupFirstIssuerDid(
   return issuerDid;
 }
 
-export async function setupSecondIssuerDid(
-  server: Express,
+export async function setupSecondIssuerDidWeb(
   assertionKey: Key,
   oldDid: string
 ): Promise<string> {
@@ -146,7 +95,7 @@ export async function setupSecondIssuerDid(
   return issuerDid;
 }
 
-export async function updateDidDocumentWithAlsoKnownAs(
+export async function updateDidWebDocumentWithAlsoKnownAs(
   didToUpdate: string,
   newDid: string
 ) {
@@ -161,7 +110,7 @@ export async function updateDidDocumentWithAlsoKnownAs(
   });
 }
 
-export async function rotateIssuerDidKey(
+export async function rotateIssuerDidWebKey(
   didToUpdate: string,
   newAssertionKey: Key
 ) {

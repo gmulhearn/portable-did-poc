@@ -16,19 +16,12 @@ import { assert } from "console";
 
 /// 1. AGENT INITIALIZATION
 console.log("### AGENT INITIALIZATION");
-const server = express();
 await agent.initialize();
-server.listen(3000, (err?: any) => {
-  if (err) throw err;
-  console.log(
-    "Server running on http://localhost:3000 (for did:web resolution)"
-  );
-});
 
 /// 2. SETUP ISSUER'S FIRST (OLD) DID
 console.log("### SETUP ISSUER DID #1");
 const issuerAssertionKey = await setupAssertionKey();
-const firstIssuerDid = await setupFirstIssuerDid(server, issuerAssertionKey);
+const firstIssuerDid = await setupFirstIssuerDid(issuerAssertionKey);
 {
   let didDoc = await agent.dids.resolveDidDocument(firstIssuerDid);
   console.log("initialized issuer's first DID", firstIssuerDid, didDoc);
@@ -69,7 +62,6 @@ assert(
 /// 5. SETUP ISSUER'S SECOND (NEW) DID
 console.log("### SETUP ISSUER DID #2");
 const secondIssuerDid = await setupSecondIssuerDid(
-  server,
   issuerAssertionKey,
   firstIssuerDid
 );
@@ -135,3 +127,5 @@ console.log(
   JSON.stringify(verificationResult4)
 );
 assert(!verificationResult4.isValid);
+
+console.log("SUCCESSFULLY COMPLETED DEMO FLOW");
