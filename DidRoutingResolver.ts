@@ -78,8 +78,14 @@ export class DidRoutingResolver implements DidResolver {
       didResolutionOptions
     );
 
-    // TODO - HACK since we can't deactivate did:web, update once we use dids that can deactivate
-    if (did.startsWith("did:web") && did.endsWith(":first")) {
+    console.log(res.didDocument)
+    console.log(JSON.stringify(res.didDocument))
+
+    // TODO - HACK since we can't ACTUALLY deactivate did:web's,
+    // we use this `deactivated` field that we've forced into the DIDDoc
+    // it is NOT a real field.
+    let jsonDidDoc = res.didDocument as any
+    if (did.startsWith("did:web") && jsonDidDoc.deactivated) {
       res.didDocumentMetadata.deactivated = true;
     }
 

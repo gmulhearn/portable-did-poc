@@ -111,7 +111,18 @@ export async function updateDidWebDocumentWithAlsoKnownAs(
 }
 
 export async function deactivateDidWeb(did: string) {
-    // NO-OP - cannot update did:web metadata with deactivation
+  // TODO - this is a hack, there is no way to deactivate a did:web
+  // but we emulate it by inserting it as a field that the resolver can
+  // process
+  const [didRecord] = await agent.dids.getCreatedDids({ did: did });
+  const didDoc = didRecord.didDocument!.toJSON();
+  didDoc["deactivated"] = true;
+
+  await agent.dids.import({
+    did: did,
+    didDocument: JsonTransformer.fromJSON(didDoc, DidDocument),
+    overwrite: true,
+  });
 }
 
 export async function rotateIssuerDidWebKey(
