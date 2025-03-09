@@ -6,6 +6,7 @@ import {
 } from "@credo-ts/core";
 import {
   agent,
+  deactivateDid,
   rotateIssuerDidKey,
   setupAssertionKey,
   setupFirstIssuerDid,
@@ -73,11 +74,11 @@ const secondIssuerDid = await setupSecondIssuerDid(
 /// 6. DEACTIVATE ISSUER'S OLD DID AND POINT TO NEW DID (alsoKnownAs)
 console.log("### DEACTIVATE ISSUER DID #1");
 await updateDidDocumentWithAlsoKnownAs(firstIssuerDid, secondIssuerDid);
+await deactivateDid(firstIssuerDid);
 {
   let didDoc = await agent.dids.resolveDidDocument(firstIssuerDid);
   console.log("updated issuer's first DID with AKA field", didDoc);
 }
-// TODO - deactive old DID
 
 /// 7. RE-VERIFY CREDENTIAL FROM ISSUER'S FIRST DID (SHOULD RE-ROUTE TO NEW DID DOC)
 console.log("### RE-VERIFY CRED FROM ISSUER DID #1");

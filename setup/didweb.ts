@@ -7,7 +7,7 @@ import {
 } from "@credo-ts/core";
 
 import { AGENT_HOST } from "../constants";
-import { Express, Response } from "express";
+import { Response } from "express";
 import { agent } from ".";
 import { server } from "./server";
 
@@ -108,6 +108,10 @@ export async function updateDidWebDocumentWithAlsoKnownAs(
     didDocument: JsonTransformer.fromJSON(didDoc, DidDocument),
     overwrite: true,
   });
+}
+
+export async function deactivateDidWeb(did: string) {
+    // NO-OP - cannot update did:web metadata with deactivation
 }
 
 export async function rotateIssuerDidWebKey(

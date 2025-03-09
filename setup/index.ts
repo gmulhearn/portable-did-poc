@@ -26,11 +26,19 @@ import {
 } from "../constants";
 import { DidRoutingResolver } from "../DidRoutingResolver";
 import {
+  deactivateDidWeb,
   rotateIssuerDidWebKey,
   setupFirstIssuerDidWeb,
   setupSecondIssuerDidWeb,
   updateDidWebDocumentWithAlsoKnownAs,
 } from "./didweb";
+import {
+  deactivateDidCheqd,
+  rotateIssuerDidCheqdKey,
+  setupFirstIssuerDidCheqd,
+  setupSecondIssuerDidCheqd,
+  updateDidCheqdDocumentWithAlsoKnownAs,
+} from "./didcheqd";
 
 export const agent = new Agent({
   dependencies: agentDependencies,
@@ -83,6 +91,7 @@ export async function setupAssertionKey(): Promise<Key> {
 
 export async function setupFirstIssuerDid(assertionKey: Key): Promise<string> {
   return await setupFirstIssuerDidWeb(assertionKey);
+  // return await setupFirstIssuerDidCheqd(assertionKey);
 }
 
 export async function setupSecondIssuerDid(
@@ -90,6 +99,7 @@ export async function setupSecondIssuerDid(
   oldDid: string
 ): Promise<string> {
   return await setupSecondIssuerDidWeb(assertionKey, oldDid);
+  // return await setupSecondIssuerDidCheqd(assertionKey, oldDid);
 }
 
 export async function updateDidDocumentWithAlsoKnownAs(
@@ -97,6 +107,14 @@ export async function updateDidDocumentWithAlsoKnownAs(
   newDid: string
 ) {
   await updateDidWebDocumentWithAlsoKnownAs(didToUpdate, newDid);
+  // await updateDidCheqdDocumentWithAlsoKnownAs(didToUpdate, newDid);
+}
+
+export async function deactivateDid(
+  did: string
+) {
+  await deactivateDidWeb(did)
+  // await deactivateDidCheqd(did)
 }
 
 export async function rotateIssuerDidKey(
@@ -104,4 +122,5 @@ export async function rotateIssuerDidKey(
   newAssertionKey: Key
 ) {
   await rotateIssuerDidWebKey(didToUpdate, newAssertionKey);
+  // await rotateIssuerDidCheqdKey(didToUpdate, newAssertionKey);
 }
