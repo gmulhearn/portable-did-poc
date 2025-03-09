@@ -1,17 +1,18 @@
-import express, { Response, Express } from "express";
+import express from "express";
 import {
   ClaimFormat,
-  DidDocument,
-  DidDocumentBuilder,
-  JsonTransformer,
-  Key,
-  KeyType,
-  VerificationMethod,
   W3cCredential,
   W3cJsonLdVerifiableCredential,
 } from "@credo-ts/core";
-import { AGENT_HOST } from "./constants";
-import { agent } from "./agent";
+import {
+  agent,
+  rotateIssuerDidKey,
+  setupAssertionKey,
+  setupFirstIssuerDid,
+  setupSecondIssuerDid,
+  updateDidDocumentWithAlsoKnownAs,
+} from "./setup";
+import { assert } from "console";
 
 /// 1. AGENT INITIALIZATION
 console.log("### AGENT INITIALIZATION");
@@ -58,6 +59,12 @@ let verificationResult = await agent.w3cCredentials.verifyCredential({
   credential: issuedCredential,
 });
 console.log("cred verification result", verificationResult.isValid);
+assert(verificationResult.isValid);
+assert(
+  (verificationResult.validations.vcJs as any)["results"][0][
+    "verificationMethod"
+  ]["controller"] == firstIssuerDid
+);
 
 /// 5. SETUP ISSUER'S SECOND (NEW) DID
 console.log("### SETUP ISSUER DID #2");
@@ -85,114 +92,46 @@ console.log("### RE-VERIFY CRED FROM ISSUER DID #1");
 let verificationResult2 = await agent.w3cCredentials.verifyCredential({
   credential: issuedCredential,
 });
-console.log("cred verification result", verificationResult2.isValid, JSON.stringify(verificationResult2));
+console.log(
+  "cred verification result",
+  verificationResult2.isValid,
+  JSON.stringify(verificationResult2)
+);
+assert(verificationResult2.isValid);
+assert(
+  (verificationResult2.validations.vcJs as any)["results"][0][
+    "verificationMethod"
+  ]["controller"] == secondIssuerDid
+);
 
-// TODO - some more fail cases
+/// OTHER FLOWS
 
-async function setupAssertionKey(): Promise<Key> {
-  return await agent.wallet.createKey({
-    keyType: KeyType.Ed25519,
-  });
-}
+/// 8. ROTATE KEY IN ISSUER'S FIRST DID DOC (SHOULD NOT AFFECT)
+let newAssertionKey = await setupAssertionKey();
+await rotateIssuerDidKey(firstIssuerDid, newAssertionKey);
 
-async function setupFirstIssuerDid(
-  server: Express,
-  assertionKey: Key
-): Promise<string> {
-  const cleanHost = encodeURIComponent(
-    AGENT_HOST.replace("https://", "").replace("http://", "")
-  );
-  const issuerDid = `did:web:${cleanHost}:first`;
+/// 9. RE-VERIFY CREDENTIAL FROM ISSUER'S FIRST DID (SHOULD RE-ROUTE TO NEW DID DOC AND NOT BE AFFECTED)
+console.log("### RE-VERIFY CRED FROM ISSUER DID #1");
+let verificationResult3 = await agent.w3cCredentials.verifyCredential({
+  credential: issuedCredential,
+});
+console.log(
+  "cred verification result",
+  verificationResult3.isValid,
+  JSON.stringify(verificationResult3)
+);
 
-  const assertionMethod = new VerificationMethod({
-    id: `${issuerDid}#key-1`,
-    type: "Ed25519VerificationKey2018",
-    controller: issuerDid,
-    publicKeyBase58: assertionKey.publicKeyBase58,
-  });
+/// 10. ROTATE KEY IN ISSUER'S SECOND DID DOC (SHOULD AFFECT)
+await rotateIssuerDidKey(secondIssuerDid, newAssertionKey);
 
-  const didDocument = new DidDocumentBuilder(issuerDid)
-    .addContext("https://w3id.org/security/suites/ed25519-2018/v1") // context for Ed25519VerificationKey2018
-    .addVerificationMethod(assertionMethod)
-    .addAssertionMethod(assertionMethod.id)
-    .build();
-
-  await agent.dids.import({
-    did: issuerDid,
-    didDocument,
-    overwrite: true,
-  });
-
-  server.use("/first/did.json", async (_, response: Response) => {
-    const [createdDid] = await agent.dids.getCreatedDids({ did: issuerDid });
-
-    if (!createdDid || !createdDid.didDocument) {
-      throw new Error("did does not exist");
-    }
-
-    return response.json(createdDid.didDocument);
-  });
-
-  return issuerDid;
-}
-
-async function updateDidDocumentWithAlsoKnownAs(
-  didToUpdate: string,
-  newDid: string
-) {
-  const [oldDidRecord] = await agent.dids.getCreatedDids({ did: didToUpdate });
-  const oldDidDoc = oldDidRecord.didDocument!.toJSON();
-  oldDidDoc["alsoKnownAs"] = [newDid];
-
-  await agent.dids.import({
-    did: didToUpdate,
-    didDocument: JsonTransformer.fromJSON(oldDidDoc, DidDocument),
-    overwrite: true,
-  });
-}
-
-async function setupSecondIssuerDid(
-  server: Express,
-  assertionKey: Key,
-  oldDid: string
-): Promise<string> {
-  const cleanHost = encodeURIComponent(
-    AGENT_HOST.replace("https://", "").replace("http://", "")
-  );
-  const issuerDid = `did:web:${cleanHost}:second`;
-
-  const assertionMethod = new VerificationMethod({
-    id: `${oldDid}#key-1`, // must retain the old VM
-    type: "Ed25519VerificationKey2018",
-    controller: issuerDid,
-    // controller: oldDid, // must retain the old controller?
-    publicKeyBase58: assertionKey.publicKeyBase58,
-  });
-
-  const didDocument = new DidDocumentBuilder(issuerDid)
-    .addContext("https://w3id.org/security/suites/ed25519-2018/v1") // context for Ed25519VerificationKey2018
-    .addVerificationMethod(assertionMethod)
-    .addAssertionMethod(assertionMethod.id)
-    .build()
-    .toJSON();
-
-  didDocument["alsoKnownAs"] = [oldDid];
-
-  await agent.dids.import({
-    did: issuerDid,
-    didDocument: JsonTransformer.fromJSON(didDocument, DidDocument),
-    overwrite: true,
-  });
-
-  server.use("/second/did.json", async (_, response: Response) => {
-    const [createdDid] = await agent.dids.getCreatedDids({ did: issuerDid });
-
-    if (!createdDid || !createdDid.didDocument) {
-      throw new Error("did does not exist");
-    }
-
-    return response.json(createdDid.didDocument);
-  });
-
-  return issuerDid;
-}
+/// 11. RE-VERIFY CREDENTIAL FROM ISSUER'S FIRST DID (SHOULD RE-ROUTE TO NEW DID DOC AND BE AFFECTED)
+console.log("### RE-VERIFY CRED FROM ISSUER DID #1");
+let verificationResult4 = await agent.w3cCredentials.verifyCredential({
+  credential: issuedCredential,
+});
+console.log(
+  "cred verification result",
+  verificationResult4.isValid,
+  JSON.stringify(verificationResult4)
+);
+assert(!verificationResult4.isValid);
