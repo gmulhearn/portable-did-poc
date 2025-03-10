@@ -46,6 +46,12 @@ import {
   setupSecondIssuerDidCheqd,
   updateDidCheqdDocumentWithAlsoKnownAs,
 } from "./didcheqd";
+import {
+  deactivateDidSov,
+  setupFirstIssuerDidSov,
+  updateDidSovDocumentWithAlsoKnownAs,
+} from "./didsov";
+import { ExtendedIndyVdrSovDidResolver } from "../DidSovExtendedResolver";
 
 export const agent = new Agent({
   dependencies: agentDependencies,
@@ -67,6 +73,8 @@ export const agent = new Agent({
           new WebDidResolver(),
           new CheqdDidResolver(),
           new IndyVdrIndyDidResolver(),
+          // new IndyVdrSovDidResolver(), // use our extended did:sov resolver instead
+          new ExtendedIndyVdrSovDidResolver(),
         ]),
       ],
       registrars: [
@@ -117,6 +125,8 @@ export async function setupFirstIssuerDid(assertionKey: Key): Promise<string> {
     return await setupFirstIssuerDidCheqd(assertionKey);
   } else if (DEMO_DID_METHODS === "web-to-web") {
     return await setupFirstIssuerDidWeb(assertionKey);
+  } else if (DEMO_DID_METHODS === "sov-to-cheqd") {
+    return await setupFirstIssuerDidSov(assertionKey);
   } else {
     throw new Error("bad method");
   }
@@ -130,6 +140,8 @@ export async function setupSecondIssuerDid(
     return await setupSecondIssuerDidCheqd(assertionKey, oldDid);
   } else if (DEMO_DID_METHODS === "web-to-web") {
     return await setupSecondIssuerDidWeb(assertionKey, oldDid);
+  } else if (DEMO_DID_METHODS === "sov-to-cheqd") {
+    return await setupSecondIssuerDidCheqd(assertionKey, oldDid);
   } else {
     throw new Error("bad method");
   }
@@ -143,6 +155,8 @@ export async function updateDidDocumentWithAlsoKnownAs(
     await updateDidCheqdDocumentWithAlsoKnownAs(didToUpdate, newDid);
   } else if (DEMO_DID_METHODS === "web-to-web") {
     await updateDidWebDocumentWithAlsoKnownAs(didToUpdate, newDid);
+  } else if (DEMO_DID_METHODS === "sov-to-cheqd") {
+    await updateDidSovDocumentWithAlsoKnownAs(didToUpdate, newDid);
   } else {
     throw new Error("bad method");
   }
@@ -153,6 +167,8 @@ export async function deactivateDid(did: string) {
     await deactivateDidCheqd(did);
   } else if (DEMO_DID_METHODS === "web-to-web") {
     await deactivateDidWeb(did);
+  } else if (DEMO_DID_METHODS === "sov-to-cheqd") {
+    await deactivateDidSov(did);
   } else {
     throw new Error("bad method");
   }
@@ -166,6 +182,8 @@ export async function rotateIssuerDidKey(
     await rotateIssuerDidCheqdKey(didToUpdate, newAssertionKey);
   } else if (DEMO_DID_METHODS === "web-to-web") {
     await rotateIssuerDidWebKey(didToUpdate, newAssertionKey);
+  } else if (DEMO_DID_METHODS === "sov-to-cheqd") {
+    await rotateIssuerDidCheqdKey(didToUpdate, newAssertionKey);
   } else {
     throw new Error("bad method");
   }

@@ -25,7 +25,16 @@ This flow involves a `did:sov` issuer moving to a `did:cheqd` DID.
 To setup:
 1. create a indy DID seed (32 hex chars). (e.g. with `uuidgen | sed -e "s/-//gi"`)
 2. register the DID with BCovrin testnet: http://test.bcovrin.vonx.io/ (paste in seed - not recommended for production)
-3. 
+3. set `.env` `SOV_ENDORSER_SEED` to your seed
+4. set `.env` `SOV_ENDORSER_NYM` to the "DID" that was output from BCovrin (e.g. `SOV_ENDORSER_NYM=EGZ73i3drAEWNejZED7uhg`)
+5. set `.env` `DEMO_DID_METHODS` to `sov-to-cheqd` (`DEMO_DID_METHODS=sov-to-cheqd`)
+6. run the demo `npm run dev`
+
+#### Notes:
+* this uses a modified version of did:sov method, where:
+  * if the DID's resolved verkey is dead (`0x000000000000000000000000000000000000000000000000000000000000dead`), then the DID is "deactivated". This is in-place of the real did:sov deactivation step where verkey is set to null. This isn't possible with the current typing of indy-vdr (doesn't allow null), and is significant effort to fix.
+  * the the indy NYM has an attribute (ATTRIB) for `alsoKnownAs`, then it is added to the resolved DID Document as the `alsoKnownAs` field.
+  * These changes can be seen in the [modified resolver](./DidSovExtendedResolver.ts)
 
 ### Run the `did:web` -> `did:web` issuer demo
 This flow involves a `did:web` issuer moving from one `did:web` DID to another `did:web`.
@@ -36,6 +45,10 @@ To setup:
 3. set `.env` `AGENT_HOST` to your ngrok url, e.g. `AGENT_HOST=https://38eb-2401-d002-ca04-a900-2452-e2fa-70e9-3f6a.ngrok-free.app`
 4. set `.env` `DEMO_DID_METHODS` to `web-to-web` (`DEMO_DID_METHODS=web-to-web`)
 5. run the demo `npm run dev`
+
+#### Notes:
+* this uses a modified version of did:web method rules, where:
+  * if the did.json contains a `deactivated: true` field, then the DID is "deactivated". This is due to did:web not having an official way to deactivate the document whilst retaining the data.
 
 ### Run the `did:cheqd` -> `did:cheqd` issuer demo
 This flow involves a `did:cheqd` issuer moving from one `did:cheqd` DID to another `did:cheqd`.
