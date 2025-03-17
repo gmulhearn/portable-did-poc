@@ -1,0 +1,54 @@
+{
+  "resolutionTimes": {
+    "withoutRedirect": [
+      1032.879923999999,
+      830.8248409999978
+    ],
+    "withRedirect": [
+      1797.2430339999992
+    ]
+  },
+  "verificationTimes": {
+    "beforeTransition": [
+      2785.2390810000015
+    ],
+    "afterTransition": [
+      4505.151872000002
+    ],
+    "afterKeyRotation": [
+      1600.4727550000025
+    ]
+  },
+  "verificationResults": {
+    "beforeTransition": [
+      true
+    ],
+    "afterTransition": [
+      true
+    ],
+    "afterKeyRotation": [
+      false
+    ]
+  },
+  "transitionSuccess": true,
+  "keyRotationSuccess": true,
+  "securityChecks": {
+    "didControllerVerified": [
+      true
+    ],
+    "properAuthorizationForTransition": [
+      false
+    ]
+  },
+  "summary": {
+    "avgResolutionTimeWithoutRedirect": 931.8523824999984,
+    "avgResolutionTimeWithRedirect": 1797.2430339999992,
+    "resolutionOverhead": 1.9286778332618604,
+    "verificationSuccessRateBeforeTransition": 100,
+    "verificationSuccessRateAfterTransition": 100,
+    "verificationSuccessRateAfterKeyRotation": 0,
+    "securityCheckSuccessRate": 100
+  },
+  "timestamp": "2025-03-17T12:54:20.169Z",
+  "didMethods": "cheqd-to-cheqd"
+}
