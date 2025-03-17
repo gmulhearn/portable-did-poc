@@ -1,14 +1,14 @@
 # DID Portability Performance Report
 
-Generated on: 3/17/2025, 9:55:13 AM
+Generated on: 3/17/2025, 4:40:51 PM
 
 ## Overview
 
-| DID Method | Avg Resolution Time | Resolution Overhead | Verification Success Rate (After Transition) | Security Check Pass Rate |
-|------------|---------------------|---------------------|---------------------------------------------|---------------------------|
-| cheqd-to-cheqd | 916.15ms | 1.92x | 100.00% | 100.00% |
-| sov-to-cheqd | 735.28ms | 2.16x | 100.00% | 100.00% |
-| web-to-web | 62.87ms | 1.08x | 100.00% | 100.00% |
+| DID Method | Avg Resolution Time | Resolution Time (with redirect) | Resolution Overhead | Verification Success Rate (After Transition) | Security Check Pass Rate |
+|------------|---------------------|--------------------------------|---------------------|---------------------------------------------|---------------------------|
+| cheqd-to-cheqd | 916.15ms | 1761.95ms | 1.92x | 100.00% | 100.00% |
+| sov-to-cheqd | 735.28ms | 1570.66ms | 2.16x | 100.00% | 100.00% |
+| web-to-web | 62.87ms | 68.12ms | 1.08x | 100.00% | 100.00% |
 
 ## cheqd-to-cheqd Method Analysis
 

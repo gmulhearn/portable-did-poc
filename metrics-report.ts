@@ -66,34 +66,39 @@ async function generateReport() {
     report += `Generated on: ${new Date().toLocaleString()}\n\n`;
     
     // Overview table
-    report += '## Overview\n\n';
-    report += '| DID Method | Avg Resolution Time | Resolution Overhead | Verification Success Rate (After Transition) | Security Check Pass Rate |\n';
-    report += '|------------|---------------------|---------------------|---------------------------------------------|---------------------------|\n';
+report += '## Overview\n\n';
+report += '| DID Method | Avg Resolution Time | Resolution Time (with redirect) | Resolution Overhead | Verification Success Rate (After Transition) | Security Check Pass Rate |\n';
+report += '|------------|---------------------|--------------------------------|---------------------|---------------------------------------------|---------------------------|\n';
+
+for (const [method, metrics] of Object.entries(metricsByMethod)) {
+  // Calculate averages across all runs for this method
+  const avgResolutionTime = metrics
+    .map(m => m.summary.avgResolutionTimeWithoutRedirect)
+    .filter((t): t is number => t !== null)
+    .reduce((sum, time) => sum + time, 0) / metrics.length;
     
-    for (const [method, metrics] of Object.entries(metricsByMethod)) {
-      // Calculate averages across all runs for this method
-      const avgResolutionTime = metrics
-        .map(m => m.summary.avgResolutionTimeWithoutRedirect)
-        .filter((t): t is number => t !== null)
-        .reduce((sum, time) => sum + time, 0) / metrics.length;
-        
-      const avgResolutionOverhead = metrics
-        .map(m => m.summary.resolutionOverhead)
-        .filter((t): t is number => t !== null)
-        .reduce((sum, overhead) => sum + overhead, 0) / metrics.length;
-        
-      const avgVerificationSuccessRate = metrics
-        .map(m => m.summary.verificationSuccessRateAfterTransition)
-        .filter((t): t is number => t !== null)
-        .reduce((sum, rate) => sum + rate, 0) / metrics.length;
-        
-      const avgSecurityCheckRate = metrics
-        .map(m => m.summary.securityCheckSuccessRate)
-        .filter((t): t is number => t !== null)
-        .reduce((sum, rate) => sum + rate, 0) / metrics.length;
-      
-      report += `| ${method} | ${avgResolutionTime.toFixed(2)}ms | ${avgResolutionOverhead.toFixed(2)}x | ${avgVerificationSuccessRate.toFixed(2)}% | ${avgSecurityCheckRate.toFixed(2)}% |\n`;
-    }
+  const avgResolutionTimeWithRedirect = metrics
+    .map(m => m.summary.avgResolutionTimeWithRedirect)
+    .filter((t): t is number => t !== null)
+    .reduce((sum, time) => sum + time, 0) / metrics.length;
+    
+  const avgResolutionOverhead = metrics
+    .map(m => m.summary.resolutionOverhead)
+    .filter((t): t is number => t !== null)
+    .reduce((sum, overhead) => sum + overhead, 0) / metrics.length;
+    
+  const avgVerificationSuccessRate = metrics
+    .map(m => m.summary.verificationSuccessRateAfterTransition)
+    .filter((t): t is number => t !== null)
+    .reduce((sum, rate) => sum + rate, 0) / metrics.length;
+    
+  const avgSecurityCheckRate = metrics
+    .map(m => m.summary.securityCheckSuccessRate)
+    .filter((t): t is number => t !== null)
+    .reduce((sum, rate) => sum + rate, 0) / metrics.length;
+  
+  report += `| ${method} | ${avgResolutionTime.toFixed(2)}ms | ${avgResolutionTimeWithRedirect.toFixed(2)}ms | ${avgResolutionOverhead.toFixed(2)}x | ${avgVerificationSuccessRate.toFixed(2)}% | ${avgSecurityCheckRate.toFixed(2)}% |\n`;
+}
     
     // Detailed analysis for each method
     for (const [method, metrics] of Object.entries(metricsByMethod)) {
