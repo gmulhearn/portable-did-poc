@@ -1,0 +1,54 @@
+{
+  "resolutionTimes": {
+    "withoutRedirect": [
+      94.64689499999986,
+      30.991549000000305
+    ],
+    "withRedirect": [
+      62.113538999999946
+    ]
+  },
+  "verificationTimes": {
+    "beforeTransition": [
+      116.9372870000002
+    ],
+    "afterTransition": [
+      177.22306000000026
+    ],
+    "afterKeyRotation": [
+      75.29329599999983
+    ]
+  },
+  "verificationResults": {
+    "beforeTransition": [
+      true
+    ],
+    "afterTransition": [
+      true
+    ],
+    "afterKeyRotation": [
+      false
+    ]
+  },
+  "transitionSuccess": true,
+  "keyRotationSuccess": true,
+  "securityChecks": {
+    "didControllerVerified": [
+      true
+    ],
+    "properAuthorizationForTransition": [
+      false
+    ]
+  },
+  "summary": {
+    "avgResolutionTimeWithoutRedirect": 62.81922200000008,
+    "avgResolutionTimeWithRedirect": 62.113538999999946,
+    "resolutionOverhead": 0.9887664479512316,
+    "verificationSuccessRateBeforeTransition": 100,
+    "verificationSuccessRateAfterTransition": 100,
+    "verificationSuccessRateAfterKeyRotation": 0,
+    "securityCheckSuccessRate": 100
+  },
+  "timestamp": "2025-03-17T12:52:37.148Z",
+  "didMethods": "web-to-web"
+}

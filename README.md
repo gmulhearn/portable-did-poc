@@ -58,3 +58,10 @@ To setup:
 2. set `.env` `CHEQD_TESTNET_COSMOS_PAYER_SEED` to your seed from leap setup, e.g. `CHEQD_TESTNET_COSMOS_PAYER_SEED='foo foo foo foo foo foo foo foo foo foo foo foo'`
 3. set `.env` `DEMO_DID_METHODS` to `cheqd-to-cheqd` (`DEMO_DID_METHODS=cheqd-to-cheqd`)
 4. run the demo `npm run dev`
+
+### Analyse the metrics
+We've also instrumented the implementation to get metrics from the different portability demos. For every `npm run dev`, there will be created a `metrics_DEMO_DID_METHODS_id.json with a compilation with data from that demo in the /metrics folder
+
+To create the Performance Report from the average of all demo runs you do, run `npx ts-node metrics-report.ts `
+
+Instead of running manually each demo, you can instead run `npx ts-node benchmark-runner.ts`, which will run 3 times each demo, and after it, you can create the Performance Report from the values you get with the Benchmark
